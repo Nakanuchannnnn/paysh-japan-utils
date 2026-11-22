@@ -1,0 +1,6 @@
+node_modules/
+*.log
+.DS_Store
+
+# postal dataset ships as data/postal-<n>.json chunks (transfer size limits)
+data/postal.json

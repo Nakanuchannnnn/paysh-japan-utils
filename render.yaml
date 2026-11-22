@@ -1,0 +1,27 @@
+# Render Blueprint — ALTERNATIVE host (the primary plan is Koyeb; see
+# ../DEPLOY.md). Render's free web service spins down after 15 min idle
+# and takes ~1 min to wake, which risks pay.sh CI probe / buyer timeouts.
+# Kept ready so the user can switch with one Blueprint deploy if needed.
+#
+# Native Node runtime (not Docker): Render injects PORT, and src/config.js
+# reads it. HOST must be 0.0.0.0.
+services:
+  - type: web
+    name: japan-utils
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: node src/server.js
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: NODE_ENV
+        value: production
+      - key: FACILITATOR_URL
+        value: https://facilitator.payai.network
+      - key: FACILITATOR_FEE_PAYER
+        value: CjNFTjvBhbJJd2B5ePPMHRLx1ELZpa8dwQgGL727eKww
+      # Set AFTER the first deploy, to this service's own URL
+      # (https://japan-utils.onrender.com), then redeploy.
+      - key: PUBLIC_BASE_URL
+        sync: false

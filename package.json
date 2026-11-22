@@ -1,0 +1,1 @@
+{"description":"Pay-per-request utility APIs for AI agents (x402 / Solana USDC) — Japan-first portfolio","engines":{"node":">=20"},"name":"paysh-japan-utils","private":true,"scripts":{"gen-openapi":"node scripts/gen-openapi.mjs","start":"node src/server.js","test":"node --test test/local.test.mjs"},"type":"module","version":"0.1.0"}

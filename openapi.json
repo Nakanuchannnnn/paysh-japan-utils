@@ -1,0 +1,963 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Japan Utils — pay-per-request utility APIs for AI agents",
+    "version": "0.1.0",
+    "description": "Deterministic utility APIs priced per request in Solana USDC via x402: Japanese postal code lookup, holidays/business days (JP/US/DE/FR/GB), wareki conversion, kana-romaji/slug/width text tools, timezone and Unix time conversion, CSV/JSON/unit/FX conversion, QR code generation, web metadata extraction and DNS lookup. Paid operations return HTTP 402 with x402 payment requirements when called without an X-PAYMENT header."
+  },
+  "servers": [
+    {
+      "url": "https://japan-utils.example.com"
+    }
+  ],
+  "paths": {
+    "/v1/postal": {
+      "get": {
+        "operationId": "postal_lookup",
+        "summary": "Look up Japanese addresses by 7-digit postal code",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.02",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "description": "7-digit Japanese postal code; hyphen optional (e.g. 100-0001 or 1000001)",
+            "schema": {
+              "type": "string"
+            },
+            "example": "100-0001"
+          }
+        ]
+      }
+    },
+    "/v1/holidays": {
+      "get": {
+        "operationId": "calendar_holidays",
+        "summary": "List national/public holidays for a year (JP, US, DE, FR, GB)",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.01",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "required": true,
+            "description": "Year, 2020-2030",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 2026
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "description": "Country code: JP (default), US, DE, FR, GB",
+            "schema": {
+              "type": "string"
+            },
+            "example": "JP"
+          }
+        ]
+      }
+    },
+    "/v1/business-day": {
+      "get": {
+        "operationId": "calendar_businessDay",
+        "summary": "Check whether a date is a business day in a country",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.01",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "description": "Date, YYYY-MM-DD",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-11-24"
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "description": "Country code: JP (default), US, DE, FR, GB",
+            "schema": {
+              "type": "string"
+            },
+            "example": "JP"
+          }
+        ]
+      }
+    },
+    "/v1/business-days/add": {
+      "get": {
+        "operationId": "calendar_addBusinessDays",
+        "summary": "Add (or subtract) N business days to a date",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.01",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "description": "Start date, YYYY-MM-DD",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-11-20"
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": true,
+            "description": "Business days to add (negative to subtract), -366..366",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 3
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "description": "Country code: JP (default), US, DE, FR, GB",
+            "schema": {
+              "type": "string"
+            },
+            "example": "JP"
+          }
+        ]
+      }
+    },
+    "/v1/wareki": {
+      "get": {
+        "operationId": "wareki_toWareki",
+        "summary": "Convert a Gregorian date to Japanese era (wareki)",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.01",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "description": "Gregorian date, YYYY-MM-DD (1868-10-23 or later)",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2026-11-22"
+          }
+        ]
+      }
+    },
+    "/v1/seireki": {
+      "get": {
+        "operationId": "wareki_toSeireki",
+        "summary": "Convert a Japanese era date to Gregorian (seireki)",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.01",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "parameters": [
+          {
+            "name": "era",
+            "in": "query",
+            "required": true,
+            "description": "Era name: 令和/平成/昭和/大正/明治 or Reiwa/Heisei/Showa/Taisho/Meiji",
+            "schema": {
+              "type": "string"
+            },
+            "example": "令和"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": true,
+            "description": "Year within the era (1 = first year)",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 8
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "description": "Month 1-12",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 11
+          },
+          {
+            "name": "day",
+            "in": "query",
+            "required": true,
+            "description": "Day of month",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 22
+          }
+        ]
+      }
+    },
+    "/v1/text/romaji": {
+      "post": {
+        "operationId": "text_romaji",
+        "summary": "Convert Japanese kana to Hepburn romaji, or romaji to hiragana",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.01",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "Kana text (to-romaji) or romaji text (to-kana)",
+                    "example": "とうきょう"
+                  },
+                  "direction": {
+                    "type": "string",
+                    "description": "\"to-romaji\" (default) or \"to-kana\"",
+                    "example": "to-romaji"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/text/slug": {
+      "post": {
+        "operationId": "text_slug",
+        "summary": "Slugify arbitrary Unicode text (Japanese kana become romaji in ASCII mode)",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.01",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "Text to slugify",
+                    "example": "東京スカイツリーの写真！"
+                  },
+                  "unicode": {
+                    "type": "boolean",
+                    "description": "Keep non-ASCII letters instead of transliterating (default false)",
+                    "example": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/text/normalize": {
+      "post": {
+        "operationId": "text_normalize",
+        "summary": "Normalize Japanese text width: fullwidth <-> halfwidth (NFKC-based)",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.01",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "text",
+                  "mode"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "Text to normalize",
+                    "example": "ＡＢＣ１２３ｶﾀｶﾅ"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "description": "\"halfwidth\", \"fullwidth\", or \"nfkc\"",
+                    "example": "halfwidth"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/time/convert": {
+      "post": {
+        "operationId": "time_convert",
+        "summary": "Convert a wall-clock time between IANA timezones",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.01",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "datetime",
+                  "from_tz",
+                  "to_tz"
+                ],
+                "properties": {
+                  "datetime": {
+                    "type": "string",
+                    "description": "Wall-clock time in from_tz: YYYY-MM-DD HH:mm:ss (or with T separator)",
+                    "example": "2026-11-22 22:00:00"
+                  },
+                  "from_tz": {
+                    "type": "string",
+                    "description": "Source IANA timezone",
+                    "example": "Asia/Tokyo"
+                  },
+                  "to_tz": {
+                    "type": "string",
+                    "description": "Target IANA timezone",
+                    "example": "America/New_York"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/time/unix": {
+      "post": {
+        "operationId": "time_unix",
+        "summary": "Convert between Unix timestamps and ISO 8601 datetimes",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.01",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "input"
+                ],
+                "properties": {
+                  "input": {
+                    "type": [
+                      "string",
+                      "number"
+                    ],
+                    "description": "Unix seconds/milliseconds (number or numeric string) or an ISO 8601 datetime string",
+                    "example": 1795350000
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/convert/csv-to-json": {
+      "post": {
+        "operationId": "convert_csvToJson",
+        "summary": "Convert CSV text to a JSON array of objects (first row = header by default)",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.02",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "csv"
+                ],
+                "properties": {
+                  "csv": {
+                    "type": "string",
+                    "description": "CSV text (RFC 4180 quoting supported)",
+                    "example": "name,age\nAlice,30\nBob,25"
+                  },
+                  "header": {
+                    "type": "boolean",
+                    "description": "Treat first row as header (default true). If false, returns arrays.",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/convert/json-to-csv": {
+      "post": {
+        "operationId": "convert_jsonToCsv",
+        "summary": "Convert a JSON array (of objects or arrays) to CSV text",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.02",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "rows"
+                ],
+                "properties": {
+                  "rows": {
+                    "type": "array",
+                    "description": "Array of objects (columns = union of keys) or array of arrays",
+                    "example": [
+                      {
+                        "name": "Alice",
+                        "age": 30
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/convert/units": {
+      "post": {
+        "operationId": "convert_units",
+        "summary": "Convert between units (length, mass, volume, area incl. tsubo, speed, data, temperature)",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.01",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "value",
+                  "from",
+                  "to"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "number",
+                    "description": "Numeric value to convert",
+                    "example": 10
+                  },
+                  "from": {
+                    "type": "string",
+                    "description": "Source unit: mm cm m km in ft yd mi | g kg t oz lb | ml l gal_us cup_jp | m2 km2 ha tsubo acre ft2 | m/s kmh mph knot | byte kb mb gb tb kib mib gib tib | c f k",
+                    "example": "km"
+                  },
+                  "to": {
+                    "type": "string",
+                    "description": "Target unit (same category)",
+                    "example": "mi"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/convert/fx": {
+      "post": {
+        "operationId": "convert_fx",
+        "summary": "Convert currencies using ECB daily reference rates (bundled snapshot, updated at deploy time)",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.02",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount",
+                  "from",
+                  "to"
+                ],
+                "properties": {
+                  "amount": {
+                    "type": "number",
+                    "description": "Amount to convert",
+                    "example": 100
+                  },
+                  "from": {
+                    "type": "string",
+                    "description": "Source ISO 4217 currency code",
+                    "example": "USD"
+                  },
+                  "to": {
+                    "type": "string",
+                    "description": "Target ISO 4217 currency code",
+                    "example": "JPY"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/qr": {
+      "post": {
+        "operationId": "qr_generate",
+        "summary": "Generate a QR code (SVG or PNG) for arbitrary text/URLs, EC level M, up to 213 bytes",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.02",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "Content to encode (UTF-8, max 213 bytes)",
+                    "example": "https://example.com"
+                  },
+                  "format": {
+                    "type": "string",
+                    "description": "\"svg\" (default, returned as image/svg+xml) or \"png\" (returned as base64 JSON)",
+                    "example": "svg"
+                  },
+                  "scale": {
+                    "type": "integer",
+                    "description": "PNG pixels per module, 1-20 (default 8)",
+                    "example": 8
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/web/ogp": {
+      "post": {
+        "operationId": "web_ogp",
+        "summary": "Fetch a web page and extract Open Graph / Twitter Card / title metadata",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.03",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "http(s) URL of the page to inspect",
+                    "example": "https://example.com"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/web/dns": {
+      "post": {
+        "operationId": "web_dns",
+        "summary": "Look up DNS records (A, AAAA, CNAME, MX, TXT, NS, CAA, SRV) for a hostname",
+        "responses": {
+          "200": {
+            "description": "Successful response (after x402 payment)"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "402": {
+            "description": "Payment required: x402 PaymentRequirements JSON (Solana USDC)"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "fixed",
+          "price": "0.01",
+          "currency": "USD",
+          "network": "solana",
+          "asset": "USDC"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Hostname to resolve",
+                    "example": "example.com"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "Record type (default A)",
+                    "example": "MX"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
